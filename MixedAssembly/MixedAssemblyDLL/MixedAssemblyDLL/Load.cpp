@@ -1,5 +1,6 @@
 #using <mscorlib.dll>
 #include "stdafx.h"
+#include "native.h" //Lets you call your native functions.
 
 // Load a managed DLL from a byte array and call a static method in the DLL.
 // dll - the byte array containing the DLL
