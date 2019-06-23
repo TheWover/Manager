@@ -1,16 +1,18 @@
-#using <mscorlib.dll>
 #include "stdafx.h"
+#using <mscorlib.dll>
 #include "native.h" //Lets you call your native functions.
+#include "managed.h"
 
 // Load a managed DLL from a byte array and call a static method in the DLL.
 // dll - the byte array containing the DLL
 // dllLength - the length of 'dll'
 // className - the name of the class with a static method to call.
 // methodName - the static method to call. Must expect no parameters.
-void LaunchDll(
+// 
+extern void LaunchDll(
 	unsigned char *dll, size_t dllLength,
 	char const *className, char const *methodName,
-	size_t numParams, )//TODO: Get an array of parameters passed in and working.
+	size_t numParams, char const **params)//TODO: Get an array of parameters passed in and working.
 {
 	// convert passed in parameter to managed values
 	cli::array<unsigned char>^ mdll = gcnew cli::array<unsigned char>(dllLength);
@@ -34,6 +36,7 @@ void LaunchDll(
 void LaunchEXE(
 	unsigned char *exe, size_t exeLength)
 {
+	/*
 	//Create an array of managed Objects with a length of 1.
 	array< System::Object^ >^ arr = gcnew array< System::Object^ >(1);
 
@@ -56,6 +59,6 @@ void LaunchEXE(
 
 	// used the converted parameters to load the DLL, find, and call the method.
 	System::Reflection::Assembly^ a = System::Reflection::Assembly::Load(mexe);
-	a->EntryPoint->Invoke(nullptr, nullptr);
+	a->EntryPoint->Invoke(nullptr, nullptr);*/
 	//TODO: Fix this later ^^. https://docs.microsoft.com/en-us/cpp/dotnet/how-to-use-arrays-in-cpp-cli?view=vs-2017
 }

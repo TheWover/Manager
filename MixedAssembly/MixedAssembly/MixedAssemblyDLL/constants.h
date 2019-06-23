@@ -3,6 +3,7 @@
 	Description:
 		Defines all of the constants used by the Mixed Assembly loader.
 */
+#pragma once
 
 #define MAX_PARAMS 8 // Maximum number of string parameters to pass into entry point
 #define MAX_PARAM_LENGTH 256 //Maximum length of each string parameter to pass into entry point

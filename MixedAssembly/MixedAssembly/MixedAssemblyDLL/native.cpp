@@ -5,53 +5,24 @@
 		- The proxy function used to invoke the managed load functions
 		- And any utility functions that you wish to invoke from managed code.
 */
+#include "stdafx.h"
 #include "native.h"
-
-static DWORD WINAPI launcher(void* h)
-{
-
-	std::cout << "Created thread to load managed code...\n";
-
-	HRSRC res = ::FindResourceA(static_cast<HMODULE>(h),
-		MAKEINTRESOURCEA(IDR_DLLENCLOSED1), "DLLENCLOSED");
-	if (res)
-	{
-		HGLOBAL dat = ::LoadResource(static_cast<HMODULE>(h), res);
-		if (dat)
-		{
-			unsigned char *dll =
-				static_cast<unsigned char*>(::LockResource(dat));
-			if (dll)
-			{
-				size_t len = SizeofResource(static_cast<HMODULE>(h), res);
-
-				//TODO: Get it to pass in arguments. Preferably using a String Table Resource.
-
-				//Update this with the correct fully-qualified class name and method name
-				LaunchDll(dll, len, "DemoAssemblyDLL.Demo", "Test");
-
-				//Use this instead if the payload is an EXE.
-				//LaunchEXE(dll, len);
-			}
-		}
-	}
-	return 0;
-};
+#include "managed.h"
 
 /* UNCOMMENT TO USE!!!! */
 //These functions are provided as examples of how to call managed code from native code.
 
 //An example native function that just prints a hello statement.
-static void Example_Native_SayHello(std::string message)
+void Example_Native_SayHello(std::string message)
 {
 	std::cout << "Hello from native code! Message: " << message;
 }
 
 //An example native function that just prints pops a command prompt.
-static void Example_Native_PopCalc()
+void Example_Native_PopCalc()
 {
 	//For some reason ShellExecute was not imported from windows.h, so we are using CreateProcess.
-	
+
 	// additional information
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
@@ -79,7 +50,7 @@ static void Example_Native_PopCalc()
 }
 
 //An example native function that invokes managed functions.
-static void Example_Native_CallManaged()
+void Example_Native_CallManaged()
 {
 	//Call the managed function to print a message.
 	Example_Managed_SayHello("I was invoked by a native function.");

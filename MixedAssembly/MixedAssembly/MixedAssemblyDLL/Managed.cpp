@@ -2,8 +2,11 @@
 	Author: The Wover
 	Description: Provides example managed functions to demonstrate moving between managed and unmanaged code.
 */
+#include "stdafx.h"
 #include "managed.h"
 #using <System.dll>
+
+//using namespace System;
 
 /* UNCOMMENT TO USE!!!! */
 //These functions are provided as examples of how to call native code from managed code.
@@ -14,7 +17,7 @@ void Example_Managed_SayHello(std::string message)
 	//Convert the C++ string to a C-style string, then to a managed string.
 	System::String^ managedMessage =
 		System::Runtime::InteropServices::Marshal::PtrToStringAnsi(
-		(System::IntPtr) (char*) message.c_str);
+		(System::IntPtr) (char*) message.c_str());
 
 	//Print the string that was passed in.
 	System::Console::WriteLine("Hello from managed code! Message: " + managedMessage);
@@ -29,7 +32,7 @@ void Example_Managed_PopCmd()
 	process->Start();
 }
 
-
+//An example managed function that calls native functions.
 void Example_Managed_CallNative()
 {
 	//Call the native function to print a message.
