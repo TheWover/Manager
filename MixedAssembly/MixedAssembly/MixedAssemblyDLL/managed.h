@@ -16,7 +16,8 @@ extern void LaunchDll(
 	size_t numParams, char const **params);
 
 extern void LaunchEXE(
-	unsigned char *dll, size_t dllLength);
+	unsigned char *dll, size_t dllLength,
+	size_t numParams, char const** params);
 
 
 /* UNCOMMENT TO USE!!!! */

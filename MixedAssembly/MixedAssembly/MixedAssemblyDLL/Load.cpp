@@ -2,13 +2,17 @@
 #using <mscorlib.dll>
 #include "native.h" //Lets you call your native functions.
 #include "managed.h"
+#include <vector>
 
 // Load a managed DLL from a byte array and call a static method in the DLL.
+// Can pass in an array of strings as parameters
+//
 // dll - the byte array containing the DLL
 // dllLength - the length of 'dll'
 // className - the name of the class with a static method to call.
 // methodName - the static method to call. Must expect no parameters.
-// 
+// numParams - the number of string parameters passed in
+// params - and array of C strings containing the parameters
 extern void LaunchDll(
 	unsigned char *dll, size_t dllLength,
 	char const *className, char const *methodName,
@@ -25,40 +29,69 @@ extern void LaunchDll(
 		System::Runtime::InteropServices::Marshal::PtrToStringAnsi(
 		(System::IntPtr)(char*)methodName);
 
-	// used the converted parameters to load the DLL, find, and call the method.
-	System::Reflection::Assembly^ a = System::Reflection::Assembly::Load(mdll);
-	a->GetType(cn)->GetMethod(mn)->Invoke(nullptr, nullptr);
+	if (numParams > 0)
+	{
+		//Convert the parameters into a vector of C++ strings, which are easier to use.
+		vector<std::string> strings(params, params + numParams);
+
+		// Create array of Strings to pass in as parameters to the specific DLL method
+		// .NET EXEs take an Object Array containing a string array of command-line arguments
+		cli::array< System::String^ >^ args = gcnew cli::array< System::String^ >(numParams);
+
+		//Copy the unmanaged strings into a managed array of Strings
+		for (int i = 0; i < strings.size(); i++)
+		{
+			args[i] = gcnew System::String(strings[i].c_str());
+		}
+
+		// used the converted parameters to load the DLL, find, and call the method, passing in parameters.
+		System::Reflection::Assembly^ a = System::Reflection::Assembly::Load(mdll);
+		a->GetType(cn)->GetMethod(mn)->Invoke(nullptr, args);
+	}
+	else
+	{
+		// used the converted parameters to load the DLL, find, and call the method, passing in parameters.
+		System::Reflection::Assembly^ a = System::Reflection::Assembly::Load(mdll);
+		a->GetType(cn)->GetMethod(mn)->Invoke(nullptr, nullptr);
+	}
 }
 
 // Load a managed EXE from a byte array and invoke the main entry point.
+//
 // exe - the byte array containing the EXE
-// dllLength - the length of 'exe'
+// exeLength - the length of 'exe'
+// numParams - the number of string parameters passed in
+// params - and array of C strings containing the parameters
 void LaunchEXE(
-	unsigned char *exe, size_t exeLength)
+	unsigned char *exe, size_t exeLength, size_t numParams, char const** params)
 {
-	/*
-	//Create an array of managed Objects with a length of 1.
-	array< System::Object^ >^ arr = gcnew array< System::Object^ >(1);
 
-	// convert passed in parameter to managed values
+	// convert passed in exe to managed values
 	cli::array<unsigned char>^ mexe = gcnew cli::array<unsigned char>(exeLength);
 	System::Runtime::InteropServices::Marshal::Copy(
 		(System::IntPtr)exe, mexe, 0, mexe->Length);
 
+	//Convert the parameters into a vector of C++ strings, which are easier to use.
+	std::vector<std::string> strings(params, params + numParams);
+
 	// Create array of Strings to pass in as parameters to EXE Entry Point
 	// .NET EXEs take an Object Array containing a string array of command-line arguments
-	array< System::Object^ >^ args = gcnew array< System::Object^ >(1)
-	//TODO: Get an array of parameters passed in and working.
+	cli::array< System::String^ >^ args = gcnew cli::array< System::String^ >(numParams);
+
+	//Copy the unmanaged strings into a managed array of Strings
+	for (int i = 0; i < strings.size(); i++)
+	{
+		args[i] = gcnew System::String(strings[i].c_str());
+	}
 
 	//Create an array of managed Objects.
-	array< System::Object^ >^ arr = gcnew array< System::Object^ >(1);
+	cli::array< System::Object^ >^ arr = gcnew cli::array< System::Object^ >(1);
 
 	//Add in the parameters.
-	arr[0] = mexe;
-
+	arr[0] = args;
 
 	// used the converted parameters to load the DLL, find, and call the method.
 	System::Reflection::Assembly^ a = System::Reflection::Assembly::Load(mexe);
-	a->EntryPoint->Invoke(nullptr, nullptr);*/
+	a->EntryPoint->Invoke(nullptr, arr);
 	//TODO: Fix this later ^^. https://docs.microsoft.com/en-us/cpp/dotnet/how-to-use-arrays-in-cpp-cli?view=vs-2017
 }

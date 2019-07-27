@@ -5,15 +5,7 @@
 
 #pragma once
 
-using namespace std;
-
-// Whether to load from a URL or a resource
-// If you add your own sources, update this enum.
-enum SOURCE_TYPE { URL, RESOURCE };
-
 enum PAYLOAD_TYPE { DLL, EXE }; // Type of the .NET Assembly to load
-
-#define RESOURCE_TYPE "ASSEMBLY_ENCLOSED"
 
 /*
 Contains the .NET Assembly payload and the information required to execute it.
@@ -31,12 +23,3 @@ typedef struct INSTANCE {
 	const char* className; // Namespace.Class of entry point. Unused for EXE payloads.
 	const char* methodName; // Method name of Entry Point. Unused for EXE payloads.
 } *PINSTANCE;
-
-/*
-Contains the options required to know how to obtain and load the instance.
-*/
-typedef struct OPTIONS {
-	SOURCE_TYPE source; // Whether we should load from a URL or a resource
-	const char *url; //The URL to download from, if the source type is URL.
-	int rescNum;
-} *POPTIONS;
