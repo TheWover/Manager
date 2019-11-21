@@ -1,4 +1,6 @@
-﻿$filename = (Get-Location).Path + "\\MixedAssembly\\x64\Debug\\MixedAssemblyDLL.dll"
+#NOTE: By using this script, I found out that Mixed Assemblies CANNOT be loaded from memory with the Reflection API.
+
+$filename = (Get-Location).Path + "\\MixedAssembly\\x64\Debug\\MixedAssemblyDLL.dll"
 
 #Loads an Assembly from a path. In our case, it is our Mixed Assembly DLL.
 #If it works, then you can inspect it like with normal Assemblies.
