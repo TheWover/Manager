@@ -86,7 +86,7 @@ When Visual Studios builds a C++/CLI program, it produces what is called a [Mixe
 
 C++/CLI is a legacy version of C++ that was specifically designed to allow for easy interoperability between native C++ and managed .NET code. In fact, that was so much the focus of its design, that it was originally referred to as IJW or, "It Just Works" (lol).
 
-![_config.yml]({{ site.baseurl }}/images/Manager/justworks.jpg)
+![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/itjustworks.jpg?raw=true "Just Works, TM")
 
 You may choose on a per-module, per-file, or even per-function basis whether or not your C++ code is managed or native. Rather than using P/Invoke to go from managed -> unmanaged code, you may simply call a managed C++/CLI function from native C++. You may also go the other direction (painfully), allowing you to truly move between managed and unmanaged code at will.
 
