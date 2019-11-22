@@ -8,6 +8,7 @@ This can be used to create C# payloads that can be ingested through DLLMain. Whe
 Manager's MixedAssembly library avoids the Loader Lock issue by not invoking the target payload directly in DllMain or the main entry point. Instead, the entry point creates a new thread to transition into managed code and load the target. This lets the CLR load safely. It also means that MixedAssembly DLLs may be used as payloads for DLL side-loading or similar attacks. They do not disturb the main functionality of the host process. And, they isolate the host process from any failure that may occur in the payload-execution/staging process.
 
 Mixed Assemblies provide two uses for offensive tools:
+
     1) As a way to load managed code from unmanaged code.
     2) To build offensive tools that can take advantage of both the .NET libraries and features as well as the capabilities and advantages of the C++/C standard libraries. Mixed Assemblies can be loaded normally using System.Reflection.Assembly.Load, and can be uses as references in C# projects.
         * Reflection in C++/CLI: https://docs.microsoft.com/en-us/cpp/dotnet/reflection-cpp-cli?view=vs-2017
@@ -31,7 +32,16 @@ Using C++/CLI can take some getting used it. Each module must be designated as C
 
 ### Using a Resource for Payload Delivery
 
+Instructions for how to add a payload as a resource with Visual Studios.
 
+1. Create a solution as a Visual C++ project in Visual Studios.
+2. Right click "Resource Files" in the Solution Explorer and select Add > Resource...
+3. Click the Import... button.
+4. Browse to the DLL or EXE you wish to use as a payload. Make sure to select All Files in the File Types of the File Browser.
+5. A popup will appear that asks you what type of resource it is. You can choose whatever name you want for the type. For the tutorial, we will use "DLLENCLOSED" for DLLs, and "EXEENCLOSED" for EXEs. Click OK.
+6. There should now be a resource of type DLLENCLOSED. By default, it will be named IDR_DLLENCLOSED1. It will be embedded into your built DLL or EXE within the .rsrc PE section.
+5. Open the main.cpp source file. Make sure that the type and name in in the FindResourceA() function call reflect the correct resource name and type. To confirm the name and type of the resource, open the .rc file under Resource Files in the Solution Explorer and look at the left-hand pane.
+6. The resource should now be embedded. It will be passed to the Assembly.Load function in a raw byte[] format.
 
 ## Further Reading
 
