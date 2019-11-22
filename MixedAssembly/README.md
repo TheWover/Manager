@@ -291,7 +291,7 @@ ModuleMonitor uses the following implementation of this logic in C#. The full co
 ```
 
 When the detection is successful, you should get a detection that looks like the following.
-![Alt text](https://github.com/TheWover/donut/blob/master/img/detected.png?raw=true "CLR Injection Detected")
+![Alt text](https://github.com/TheWover/TheWover.github.io/blob/manager/images/Introducing_Donut/detected.png?raw=true "CLR Injection Detected")
 
 It is important to note that this behaviour represents all CLR Injection techniques, of which there are several. This detection should work for donut, as well as other tools such as Cobalt Strike's 'execute-assembly' command.
 
