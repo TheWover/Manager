@@ -9,5 +9,5 @@ Microsoft also provides related APIs for profiling, debugging, thread management
 
 * None of mine for now. :-P Check out the following projects by other people:
     * https://github.com/ambray/DotNetReflectiveLoading
-    * https://github.com/caseysmithrc/AssemblyLoader 
+    * (By Casey Smith. I just forked the repo before it was deleted) https://github.com/TheWover/AssemblyLoader
     * Donut contains a CLR Host loader that is converted to shellcode: https://github.com/TheWover/donut 
