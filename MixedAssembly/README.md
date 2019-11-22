@@ -248,7 +248,7 @@ void LaunchDll(
 }
 ```
 
-But, anyway, it works. Allow me to explain:
+But, anyway, it works.
 
 # Detecting CLR Injection
 
