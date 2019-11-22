@@ -35,7 +35,7 @@ Using native (unmanaged) languages such as C and C++ provide several significant
 
 ## Why Not Both?
 
-With C++/CLI, you can create a mostly native executable with full access to the C/C++ standard libraries, the OS Win32/NT APIs, COM, and all of .NET. That is an *incredible* amount of power. While a Mixed Assembly is more painful to load from memory, it is a great option for an on-disk stager, loader, or hooking DLL.
+With C++/CLI, you can create a mostly native executable with full access to the C/C++ standard libraries, the Windows Win32/NT APIs, COM, and all of .NET. That is an *incredible* amount of power. While a Mixed Assembly is more painful to load from memory, it is a great option for an on-disk stager, loader, or hooking DLL.
 
 ### C++/CLI
 
