@@ -312,7 +312,5 @@ This project began as a PoC of that article, and has been cleaned up and expande
 ## To-Do:
 
 TODO:
-See if you can include the managed assembly as a reference somehow, so that you don't have to use Assembly.Load().
-Clean up code
-Turn into one solution
-Write up tutorial to reproduce it.
+* See if you can include the managed assembly as a reference somehow, so that you don't have to use Assembly.Load().
+* Clean up code
