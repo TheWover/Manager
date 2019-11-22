@@ -65,7 +65,7 @@ You may now be thinking: If a Mixed Assembly is an "Assembly", does that mean th
 
 Mixed Assemblies may be loaded from disk using the Reflection API, but not from memory. The `Assembly.LoadFrom` and `Assembly.LoadFile` functions work fine when the Mixed Assembly is the same architecture (x86/x64) as the loading process. They can even execute code from DllMain when loaded into a process this way. However, because of [reasons](https://stackoverflow.com/questions/2945080/how-do-i-dynamically-load-raw-assemblies-that-contains-unmanaged-codebypassing), Mixed Assemblies cannot be loaded from memory using the Reflection API. Theoretically, you could write a reflective loader that loads the DLL in a similar way as Stephen Fewer's Reflective DLL Injection (or any other PE Loader), but I will leave that as an exercise to the reader. ;-) 
 
-Even with this limitation, the Reflection API can be useful for Mixed Assemblies. If you wish to manually execute your stager from disk, you may do so. Anything that calls Assembly.Load(string path) will successfully load your Mixed Assembly (and incidentally invoke anythign in DLLMain). And, you may use all of the normal APIs for inspecting managed components at runtime. But don't expect to get away with all of the Assembly.Load(byte[]) abuse that you normally do.
+Even with this limitation, the Reflection API can be useful for Mixed Assemblies. If you wish to manually execute your stager from disk, you may do so. And, you may use all of the normal APIs for inspecting managed components at runtime. But don't expect to get away with all of the Assembly.Load(byte[]) abuse that you normally do.
 
 # Usage
 
