@@ -47,7 +47,7 @@ Instructions for how to add a payload as a resource with Visual Studios.
 
 * Loader Lock: https://docs.microsoft.com/en-us/cpp/dotnet/initialization-of-mixed-assemblies?view=vs-2017
 * How C++/CLI Initializes Assemblies (and avoids loader lock): https://docs.microsoft.com/en-us/cpp/dotnet/initialization-of-mixed-assemblies?view=vs-2017
-* Run a PE from memory: https://github.com/TheWover/RunPE Good expansion for this to run PEs, too. 
+* Run an unmanaged DLL from memory: https://modexp.wordpress.com/2019/06/24/inmem-exec-dll/
 
 
 ## Credits
