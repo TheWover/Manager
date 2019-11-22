@@ -82,6 +82,15 @@ The target Assembly payload may be passed in through your favorite mechanism. My
 
 Using C++/CLI can take some getting used it. Each module must be designated as CLR code in Visual Studios. Furthermore, several properties and settings must be turned on/off for a build to be successful. My current strategy is keep running the "Build" command and Googling the errors until I stop getting them. When I have developed a better technique, I will update this Readme. ;-) This link can help in the meantime: https://blogs.msdn.microsoft.com/calvin_hsia/2013/08/30/call-managed-code-from-your-c-code/
 
+
+## Getting Visual Studios to Cooperate
+
+In the New Project dialog, under Installed Templates, select "Visual C++" > "CLR", and then either the Console Application template for EXEs or the Class Library template for DLLs.
+
+* For each file/project that you want to be built into managed code, you must set the Common Language Runtime Support option to `/clr`.
+![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/SetCLROn.PNG?raw=true "CLR Support On")
+* Change Precompiled Headers to Create rather than Yes.
+
 ## Using a Resource for Payload Delivery
 
 Instructions for how to add a payload as a resource with Visual Studios.
@@ -98,15 +107,6 @@ Instructions for how to add a payload as a resource with Visual Studios.
 5. Open the main.cpp source file. Make sure that the type and name in in the FindResourceA() function call reflect the correct resource name and type. To confirm the name and type of the resource, open the .rc file under Resource Files in the Solution Explorer and look at the left-hand pane.
 ![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/Confirm.PNG?raw=true "Confirm Resource exists")
 6. The resource should now be embedded. It can be passed to the Assembly.Load function in a raw byte[] format.
-
-
-## Getting Visual Studios to Cooperate
-
-In the New Project dialog, under Installed Templates, select "Visual C++" > "CLR", and then either the Console Application template for EXEs or the Class Library template for DLLs.
-
-* For each file/project that you want to be built into managed code, you must set the Common Language Runtime Support option to `/clr`.
-![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/SetCLROn.PNG?raw=true "CLR Support On")
-* Change Precompiled Headers to Create rather than Yes.
 
 # A Case Study
 
