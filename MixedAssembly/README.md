@@ -47,7 +47,7 @@ C++/CLI is a legacy version of C++ that was specifically designed to allow for e
 
 ![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/itjustworks.jpg?raw=true "Just Works, TM")
 
-You may choose on a per-module, per-file, or even per-function basis whether or not your C++ code is managed or native. Rather than using P/Invoke to go from managed -> unmanaged code, you may simply call a managed C++/CLI function from native C++. You may also go the other direction (painfully), allowing you to truly move between managed and unmanaged code at will.
+You may choose on a per-module, per-file, or even per-function basis whether or not your C++ code is managed or native. Rather than using P/Invoke to go from managed -> unmanaged code, you may simply call a managed C++/CLI function from native C++. You may also go the other direction, allowing you to truly move between managed and unmanaged code at will.
 
 Why would you use it legitimately?: https://stackoverflow.com/questions/1933210/c-cli-why-should-i-use-it 
 
