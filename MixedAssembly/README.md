@@ -16,47 +16,6 @@ Mixed Assemblies provide two uses for offensive tools:
         * Library support in C++/CLI: https://docs.microsoft.com/en-us/cpp/dotnet/library-support-for-mixed-assemblies?view=vs-2017 
         * Using Costura with Mixed-Mode Assemblies: https://github.com/Fody/Costura#unmanaged32assemblies--unmanaged64assemblies
 
-## Usage
-
-Rather than providing a library of classes or functions like most code libraries, this is a collection of examples along with explanation. The important takeaway from this library is not a set of code to import into your project, but the knowledge that these techniques are possible. I have not personally seen anyone else using C++/CLI in their offensive tooling. As such, I think that an overview of the offensive possibilities for C++/CLI is more useful. I have not provided any generic, turnkey solution for staging .NET Assemblies from memory and do not intend to. However, the code in this repo should provide you with everything you need create such solutions on your own. 
-
-The MixedAssembly solution contains two examples:
-
-* MixedAssemblyDLL - A DLL that bootstraps an Assembly through DllMain while avoiding Loader Lock. 
-* MixedAssemblyEXE - An EXE that runs an Assembly, passing in the command-line arguments to the payload.
-
-Both examples demonstrate how to handle loading Assemblies in either DLL or EXE format.
-
-The target Assembly payload may be passed in through your favorite mechanism. My favorite is as a packed resource embedded into the stager. The most covert variant of such is to use steganography to embed your encrypted payload inside an image, then include that as an icon resource. Doing so results in only one "file" on-disk and essentiallly wraps your easily-reversible .NET payload in a less-reversible unmanaged program. That is the example that is provided. The section below explains how to do this in Visual Studios. Other options include as an embedded string, a file downloaded through WebClient, or as a command-line argument. Really, it is up to you, so figure out yourself. ;-)
-
-Using C++/CLI can take some getting used it. Each module must be designated as CLR code in Visual Studios. Furthermore, several properties and settings must be turned on/off for a build to be successful. My current strategy is keep running the "Build" command and Googling the errors until I stop getting them. When I have developed a better technique, I will update this Readme. ;-) This link can help in the meantime: https://blogs.msdn.microsoft.com/calvin_hsia/2013/08/30/call-managed-code-from-your-c-code/
-
-### Using a Resource for Payload Delivery
-
-Instructions for how to add a payload as a resource with Visual Studios.
-
-1. Create a solution as a Visual C++ project in Visual Studios.
-2. Right click "Resource Files" in the Solution Explorer and select Add > Resource...
-![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/AddResource.png?raw=true "Add a Resource")
-3. Click the Import... button.
-4. Browse to the DLL or EXE you wish to use as a payload. Make sure to select All Files in the File Types of the File Browser.
-![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/SelectAllFiles.png?raw=true "Select All files")
-5. A popup will appear that asks you what type of resource it is. You can choose whatever name you want for the type. For the tutorial, we will use "DLLENCLOSED" for DLLs, and "EXEENCLOSED" for EXEs. Click OK.
-![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/DLLENCLOSED.PNG?raw=true "DLLENCLOSED")
-6. There should now be a resource of type DLLENCLOSED. By default, it will be named IDR_DLLENCLOSED1. It will be embedded into your built DLL or EXE within the .rsrc PE section.
-5. Open the main.cpp source file. Make sure that the type and name in in the FindResourceA() function call reflect the correct resource name and type. To confirm the name and type of the resource, open the .rc file under Resource Files in the Solution Explorer and look at the left-hand pane.
-![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/Confirm.PNG?raw=true "Confirm Resource exists")
-6. The resource should now be embedded. It can be passed to the Assembly.Load function in a raw byte[] format.
-
-
-### Getting Visual Studios to Cooperate
-
-In the New Project dialog, under Installed Templates, select "Visual C++" > "CLR", and then either the Console Application template for EXEs or the Class Library template for DLLs.
-
-* For each file/project that you want to be built into managed code, you must set the Common Language Runtime Support option to `/clr`.
-![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/SetCLROn.PNG?raw=true "CLR Support On")
-* Change Precompiled Headers to Create rather than Yes.
-
 # Advancing Tradecraft - Context
 
 There is a fundamental flaw with using .NET Assemblies as the unit of execution for offensive payloads: They are reversible to source code. Rather than being compiled to machine code, they are assembled to the Common Intermediate Language (CIL), an object-oriented assembly language that is designed to support the functionality of every common hardware platform and their corresponding Instruction Set Architecture (ISA). CIL is compiled Just-In-Time for execution by .NET's runtime environment, the Common Language Runtime. Machine code (such as x86-64 or ARM) can certainly be reverse-engineered. However, by simply knowing the machine code you may not neccessarily determine the exact, original source code. That is not the case for .NET Assemblies. They contain both their managed code, and the metadeta about that code. As such, they are trivial to reverse engineer and for static analyzers to detect and describe.
@@ -106,7 +65,48 @@ You may now be thinking: If a Mixed Assembly is an "Assembly", does that mean th
 
 Mixed Assemblies may be loaded from disk using the Reflection API, but not from memory. The `Assembly.LoadFrom` and `Assembly.LoadFile` functions work fine when the Mixed Assembly is the same architecture (x86/x64) as the loading process. They can even execute code from DllMain when loaded into a process this way. However, because of [reasons](https://stackoverflow.com/questions/2945080/how-do-i-dynamically-load-raw-assemblies-that-contains-unmanaged-codebypassing), Mixed Assemblies cannot be loaded from memory. Theoretically, you could write a reflective loader that loads the DLL in a similar was as Stephen Fewer's Reflective DLL Injection, but I will leave that as an exercise to the reader. ;-) 
 
-Even with this limitation, the Reflection API can be useful for Mixed Assemblies. If you wish to manually execute your stager from disk, you may do so. And, you may use all of the normal APIs for inspecting managed components at runtime. But don't expect to get away with all of the Assembly.Load(byte[]) abuse that you normally do. 
+Even with this limitation, the Reflection API can be useful for Mixed Assemblies. If you wish to manually execute your stager from disk, you may do so. And, you may use all of the normal APIs for inspecting managed components at runtime. But don't expect to get away with all of the Assembly.Load(byte[]) abuse that you normally do.
+
+# Usage
+
+Rather than providing a library of classes or functions like most code libraries, this is a collection of examples along with explanation. The important takeaway from this library is not a set of code to import into your project, but the knowledge that these techniques are possible. I have not personally seen anyone else using C++/CLI in their offensive tooling. As such, I think that an overview of the offensive possibilities for C++/CLI is more useful. I have not provided any generic, turnkey solution for staging .NET Assemblies from memory and do not intend to. However, the code in this repo should provide you with everything you need create such solutions on your own. 
+
+The MixedAssembly solution contains two examples:
+
+* MixedAssemblyDLL - A DLL that bootstraps an Assembly through DllMain while avoiding Loader Lock. 
+* MixedAssemblyEXE - An EXE that runs an Assembly, passing in the command-line arguments to the payload.
+
+Both examples demonstrate how to handle loading Assemblies in either DLL or EXE format.
+
+The target Assembly payload may be passed in through your favorite mechanism. My favorite is as a packed resource embedded into the stager. The most covert variant of such is to use steganography to embed your encrypted payload inside an image, then include that as an icon resource. Doing so results in only one "file" on-disk and essentiallly wraps your easily-reversible .NET payload in a less-reversible unmanaged program. That is the example that is provided. The section below explains how to do this in Visual Studios. Other options include as an embedded string, a file downloaded through WebClient, or as a command-line argument. Really, it is up to you, so figure out yourself. ;-)
+
+Using C++/CLI can take some getting used it. Each module must be designated as CLR code in Visual Studios. Furthermore, several properties and settings must be turned on/off for a build to be successful. My current strategy is keep running the "Build" command and Googling the errors until I stop getting them. When I have developed a better technique, I will update this Readme. ;-) This link can help in the meantime: https://blogs.msdn.microsoft.com/calvin_hsia/2013/08/30/call-managed-code-from-your-c-code/
+
+## Using a Resource for Payload Delivery
+
+Instructions for how to add a payload as a resource with Visual Studios.
+
+1. Create a solution as a Visual C++ project in Visual Studios.
+2. Right click "Resource Files" in the Solution Explorer and select Add > Resource...
+![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/AddResource.png?raw=true "Add a Resource")
+3. Click the Import... button.
+4. Browse to the DLL or EXE you wish to use as a payload. Make sure to select All Files in the File Types of the File Browser.
+![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/SelectAllFiles.png?raw=true "Select All files")
+5. A popup will appear that asks you what type of resource it is. You can choose whatever name you want for the type. For the tutorial, we will use "DLLENCLOSED" for DLLs, and "EXEENCLOSED" for EXEs. Click OK.
+![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/DLLENCLOSED.PNG?raw=true "DLLENCLOSED")
+6. There should now be a resource of type DLLENCLOSED. By default, it will be named IDR_DLLENCLOSED1. It will be embedded into your built DLL or EXE within the .rsrc PE section.
+5. Open the main.cpp source file. Make sure that the type and name in in the FindResourceA() function call reflect the correct resource name and type. To confirm the name and type of the resource, open the .rc file under Resource Files in the Solution Explorer and look at the left-hand pane.
+![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/Confirm.PNG?raw=true "Confirm Resource exists")
+6. The resource should now be embedded. It can be passed to the Assembly.Load function in a raw byte[] format.
+
+
+## Getting Visual Studios to Cooperate
+
+In the New Project dialog, under Installed Templates, select "Visual C++" > "CLR", and then either the Console Application template for EXEs or the Class Library template for DLLs.
+
+* For each file/project that you want to be built into managed code, you must set the Common Language Runtime Support option to `/clr`.
+![Alt text](https://github.com/TheWover/Manager/blob/master/MixedAssembly/img/SetCLROn.PNG?raw=true "CLR Support On")
+* Change Precompiled Headers to Create rather than Yes.
 
 # A Case Study
 
