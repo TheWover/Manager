@@ -195,6 +195,8 @@ After the Loader Lock avoidance, we use common C++ code to obtain the embedded r
 Let's get this out of the way: C++/CLI is ugly. It's disgusting. It's hideous. Look at that monstrosity of syntax below. 
 For whatever disgusting reason you must use the `^` symbol preceeding a variable name. And to get the strings and other input to pass correctly into managed API calls you must marshall them from their unmanaged form to their managed form.
 
+Please note, this sample code was designed for an older version of SILENTTRINITY that used a different staging process.
+
 ```cpp
 #using <mscorlib.dll>
 #include "stdafx.h"
