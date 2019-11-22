@@ -7,7 +7,7 @@
 
 #include <windows.h>
 #include <iostream>
-#include "resource.h"
+#include "Resource.h"
 #include "managed.h"
 
 /* UNCOMMENT TO USE!!!! */
